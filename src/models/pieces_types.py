@@ -37,11 +37,6 @@ class Piece(ABC):
 
         pygame.draw.circle(self.drawing_surface, couleur_visuelle, (x, y), taille_case // 3)
 
-        font = pygame.font.SysFont("Arial", 24, bold=True)
-        texte_couleur = (0, 0, 0) if self.color == Color_Piece.WHITE else (255, 255, 255)
-        text_surf = font.render(self.__str__(), True, texte_couleur)
-        text_rect = text_surf.get_rect(center=(x, y))
-        self.drawing_surface.blit(text_surf, text_rect)
 
 
 class King(Piece):
