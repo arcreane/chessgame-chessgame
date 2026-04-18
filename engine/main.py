@@ -1,56 +1,39 @@
-import pygame
-import sys
+import pygame, sys
 from src.models.board import BoardGame, taille_case
 from src.models.player import Player
 from src.models.AIPlayer import AIPlayer
 
-WHITE_CELL = (240, 217, 181)
-LAVENDER_CELL = (139, 131, 134)
-
-def dessiner_plateau(surface):
-    for ligne in range(8):
-        for colonne in range(8):
-            couleur = WHITE_CELL if (ligne + colonne) % 2 == 0 else LAVENDER_CELL
-            pygame.draw.rect(surface, couleur,
-                             pygame.Rect(colonne * taille_case, ligne * taille_case,
-                                         taille_case, taille_case))
-
-def rafraichir_interface(screen, board):
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-    dessiner_plateau(screen)
-    board.draw_pieces()
-    pygame.display.flip()
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((taille_case * 8, taille_case * 8))
-    pygame.display.set_caption("Jeu d'échecs")
+    screen = pygame.display.set_mode((640, 640))
     board = BoardGame(screen)
+
+
     players = []
-    for color, label in [(0, "BLANC"), (1, "NOIR")]:
-        rafraichir_interface(screen, board)
-        name = input(f"Nom du joueur {label} (AI pour robot) : ").strip()
-        if name.upper() == "AI":
-            players.append(AIPlayer(color))
-        else:
-            players.append(Player(name, color))
-    current_idx = 0
-    clock = pygame.time.Clock()
+    for c, l in [(0, "BLANC"), (1, "NOIR")]:
+        n = input(f"Nom {l} (ou AI) : ")
+        players.append(AIPlayer(c) if n.upper() == "AI" else Player(n, c))
+
+    curr = 0
     while True:
-        rafraichir_interface(screen, board)
-        current_player = players[current_idx]
-        if isinstance(current_player, AIPlayer):
-            pygame.time.delay(1000)
-            move = current_player.askMove(board)
-            current_idx = 1 - current_idx
+        for r in range(8):
+            for c in range(8):
+                col = (240, 217, 181) if (r + c) % 2 == 0 else (139, 131, 134)
+                pygame.draw.rect(screen, col, (c * 80, r * 80, 80, 80))
+        board.draw_pieces()
+        pygame.display.flip()
+
+        # Tour par tour
+        p = players[curr]
+        if isinstance(p, AIPlayer):
+            move = p.askMove(screen)
         else:
-            move = current_player.askMove(screen)
-            if move:
-                current_idx = 1 - current_idx
-        clock.tick(30)
+            move = p.askMove(screen)
+
+        print(f"{p.name} joue {move}")
+        curr = 1 - curr
+
 
 if __name__ == "__main__":
     main()
