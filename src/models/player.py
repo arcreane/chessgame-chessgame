@@ -4,10 +4,11 @@ class Player:
         self._color = color
 
     @property
-    def name(self): return self._name
-
+    def name(self):
+        return self._name
     @property
-    def color(self): return self._color
+    def color(self):
+        return self._color
 
-    def askMove(self) -> str:
-        return input(f"[{self._name}] À votre tour (ex: Pe2 e4) : ")
+    def askMove(self):
+        return input(f"[{self._name}] A ton tour (ex: e2 e4) : ")
