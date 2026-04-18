@@ -37,7 +37,7 @@ def main():
     players = []
     for color, label in [(0, "BLANC"), (1, "NOIR")]:
         rafraichir_interface(screen, board)
-        name = input(f"Nom du joueur {label} ('AI' pour l'ordinateur) : ").strip()
+        name = input(f"Pseudo du joueur {label} ('AI' pour l'ordinateur) : ")
         if name.upper() == "AI":
             players.append(AIPlayer(color))
         else:
