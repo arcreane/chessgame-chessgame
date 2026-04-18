@@ -4,50 +4,53 @@ from src.models.board import BoardGame, taille_case
 from src.models.player import Player
 from src.models.AIPlayer import AIPlayer
 
+WHITE_CELL = (240, 217, 181)
+LAVENDER_CELL = (139, 131, 134)
 
 def dessiner_plateau(surface):
-    for l in range(8):
-        for c in range(8):
-            color = (240, 217, 181) if (l + c) % 2 == 0 else (139, 131, 134)
-            pygame.draw.rect(surface, color, (c * taille_case, l * taille_case, taille_case, taille_case))
+    for ligne in range(8):
+        for colonne in range(8):
+            couleur = WHITE_CELL if (ligne + colonne) % 2 == 0 else LAVENDER_CELL
+            pygame.draw.rect(surface, couleur,
+                             pygame.Rect(colonne * taille_case, ligne * taille_case,
+                                         taille_case, taille_case))
 
-
-def rafraichir(screen, board):
+def rafraichir_interface(screen, board):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit();
+            pygame.quit()
             sys.exit()
-
     dessiner_plateau(screen)
     board.draw_pieces()
     pygame.display.flip()
 
-
 def main():
     pygame.init()
     screen = pygame.display.set_mode((taille_case * 8, taille_case * 8))
+    pygame.display.set_caption("Jeu d'échecs")
     board = BoardGame(screen)
-
     players = []
     for color, label in [(0, "BLANC"), (1, "NOIR")]:
-        rafraichir(screen, board)
-        name = input(f"Pseudo {label} ('AI' pour robot) : ")
-        players.append(AIPlayer(color) if name.upper() == "AI" else Player(name, color))
-
-    current_idx = 0
-    while True:
-        rafraichir(screen, board)
-        p = players[current_idx]
-
-        if isinstance(p, AIPlayer):
-            pygame.time.delay(1000)
-            move = p.askMove(board)
-            print(f"IA joue : {move}")
+        rafraichir_interface(screen, board)
+        name = input(f"Nom du joueur {label} (AI pour robot) : ").strip()
+        if name.upper() == "AI":
+            players.append(AIPlayer(color))
         else:
-            move = p.askMove()
-
-        current_idx = 1 - current_idx
-
+            players.append(Player(name, color))
+    current_idx = 0
+    clock = pygame.time.Clock()
+    while True:
+        rafraichir_interface(screen, board)
+        current_player = players[current_idx]
+        if isinstance(current_player, AIPlayer):
+            pygame.time.delay(1000)
+            move = current_player.askMove(board)
+            current_idx = 1 - current_idx
+        else:
+            move = current_player.askMove(screen)
+            if move:
+                current_idx = 1 - current_idx
+        clock.tick(30)
 
 if __name__ == "__main__":
     main()
