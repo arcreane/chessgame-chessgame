@@ -20,3 +20,6 @@ class BoardGame:
     def draw_pieces(self):
         for piece in self.pieces:
             piece.draw()
+
+
+"coded by clement"
