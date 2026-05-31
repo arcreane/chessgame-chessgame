@@ -1,71 +1,76 @@
-import pygame
-import sys
-from src.models.board import BoardGame, taille_case
+import pygame, sys
+from src.models.board import BoardGame
 from src.models.player import Player
 from src.models.AIPlayer import AIPlayer
+from src.models.timer import ChessTimer
 
 
-WHITE_CELL = (240, 217, 181)
-LAVENDER_CELL = (139, 131, 134)
-
-
-def dessiner_plateau(surface):
-    for ligne in range(8):
-        for colonne in range(8):
-            couleur = WHITE_CELL if (ligne + colonne) % 2 == 0 else LAVENDER_CELL
-            pygame.draw.rect(surface, couleur,pygame.Rect(colonne * taille_case, ligne * taille_case,taille_case, taille_case))
-
-
-def rafraichir_interface(screen, board):
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-    dessiner_plateau(screen)
+def draw_board(screen, board):
+    for r in range(8):
+        for c in range(8):
+            col = (240, 217, 181) if (r + c) % 2 == 0 else (139, 131, 134)
+            pygame.draw.rect(screen, col, (c * 80, r * 80, 80, 80))
     board.draw_pieces()
+
+
+def show_timeout_screen(screen, board, winner_name, timer, names):
+    draw_board(screen, board)
+    timer.draw(screen, names)
+
+    overlay = pygame.Surface((640, 640), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 150))
+    screen.blit(overlay, (0, 0))
+
+    font_big = pygame.font.SysFont("Arial", 44, bold=True)
+    font_small = pygame.font.SysFont("Arial", 26)
+
+    msg = font_big.render(f"{winner_name} wins on time!", True, (255, 215, 0))
+    sub = font_small.render("Window closes in 4 seconds…", True, (200, 200, 200))
+    screen.blit(msg, (320 - msg.get_width() // 2, 280))
+    screen.blit(sub, (320 - sub.get_width() // 2, 340))
     pygame.display.flip()
+    pygame.time.delay(4000)
 
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((taille_case * 8, taille_case * 8))
-    pygame.display.set_caption("Échec")
+    # 640 board + 100 timer strip
+    screen = pygame.display.set_mode((640, 740))
+    pygame.display.set_caption("Chess Game")
     board = BoardGame(screen)
 
-    print("Configuration de la partie")
     players = []
-    for color, label in [(0, "BLANC"), (1, "NOIR")]:
-        rafraichir_interface(screen, board)
-        name = input(f"Pseudo du joueur {label} ('AI' pour l'ordinateur) : ")
-        if name.upper() == "AI":
-            players.append(AIPlayer(color))
-        else:
-            players.append(Player(name, color))
+    for c, l in [(0, "BLANC"), (1, "NOIR")]:
+        n = input(f"Nom {l} (ou AI) : ")
+        players.append(AIPlayer(c) if n.upper() == "AI" else Player(n, c))
 
-    current_idx = 0
-    clock = pygame.time.Clock()
-    running = True
+    names = [p.name for p in players]
+    timer = ChessTimer(minutes=10)
+    curr = 0
 
-    print("\n Début de partie")
-    while running:
-        rafraichir_interface(screen, board)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-        current_player = players[current_idx]
+        draw_board(screen, board)
+        timer.draw(screen, names)
+        pygame.display.flip()
 
-        if isinstance(current_player, AIPlayer):
-            pygame.time.delay(1000)
-            move = current_player.askMove(board)
-            print(f"L'IA ({current_player.name}) a joué : {move}")
-            current_idx = 1 - current_idx
-        else:
-            move = current_player.askMove()
-            print(f"{current_player.name} a joué : {move}")
-            current_idx = 1 - current_idx
+        p = players[curr]
+        timer.start(curr)
+        move = p.askMove(screen, timer, names)
+        timer.stop()
 
-        clock.tick(30)
+        if move is None:
+            winner = players[1 - curr].name
+            show_timeout_screen(screen, board, winner, timer, names)
+            pygame.quit()
+            sys.exit()
 
-    pygame.quit()
+        print(f"{p.name} joue {move}")
+        curr = 1 - curr
 
 
 if __name__ == "__main__":
