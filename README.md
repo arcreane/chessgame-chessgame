@@ -77,3 +77,8 @@ Exemples :
 📄 Licence
 
 Projet académique – ISEP – 2025/2026
+
+📄Trello
+
+https://trello.com/b/pjK3Ocrg/echec
+
