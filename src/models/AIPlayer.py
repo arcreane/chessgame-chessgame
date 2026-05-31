@@ -5,7 +5,7 @@ class AIPlayer(Player):
     def __init__(self, color):
         super().__init__("AI", color)
 
-    def askMove(self, screen):
+    def askMove(self, screen, timer=None, names=None):
         from src.models.board import taille_case
         c = random.choice("abcdefgh")
         r1, r2 = (2, 4) if self.color == 0 else (7, 5)
