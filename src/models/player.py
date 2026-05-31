@@ -6,7 +6,7 @@ class Player:
         self.name = name
         self.color = color
 
-    def askMove(self, screen):
+    def askMove(self, screen, timer=None, names=None):
         input_text = ""
         font = pygame.font.SysFont("Arial", 25)
         while True:
