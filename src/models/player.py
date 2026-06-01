@@ -7,21 +7,25 @@ class Player:
         self.color = color
 
     def askMove(self, screen, timer=None, names=None):
-        input_text = ""
-        font = pygame.font.SysFont("Arial", 25)
+        font = pygame.font.SysFont("Arial", 22)
+        text = ""
         while True:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN and len(input_text) == 5:
-                        return input_text
-                    elif event.key == pygame.K_BACKSPACE:
-                        input_text = input_text[:-1]
-                    else:
-                        input_text += event.unicode
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    return None
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_RETURN and len(text) == 7:
+                        return text
+                    elif e.key == pygame.K_BACKSPACE:
+                        text = text[:-1]
+                    elif len(text) < 7:
+                        text += e.unicode
 
-            rect = pygame.Rect(140, 300, 360, 50)
-            pygame.draw.rect(screen, (255, 255, 255), rect)
-            pygame.draw.rect(screen, (0, 0, 0), rect, 2)
-            txt = font.render(f"{self.name} (ex: e2 e4) : {input_text}", True, (0, 0, 0))
-            screen.blit(txt, (rect.x + 10, rect.y + 10))
+            pygame.draw.rect(screen, (255, 255, 255), (80, 290, 480, 46))
+            pygame.draw.rect(screen, (0, 0, 0), (80, 290, 480, 46), 2)
+            screen.blit(font.render(f"{self.name}: {text}_", True, (0, 0, 0)), (90, 302))
+            screen.blit(pygame.font.SysFont("Arial", 16).render(
+                "ex: Pe2 Pe4  |  Nb1 Nc3", True, (80, 80, 80)), (90, 342))
+            if timer and names:
+                timer.draw(screen, names)
             pygame.display.flip()
