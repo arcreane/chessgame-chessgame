@@ -56,9 +56,18 @@ class Piece(ABC):
 
 class King(Piece):
     def __str__(self): return "K"
+    def isValidMove(self, fc, fr, tc, tr, pieces):
+        if self._friendly(tc, tr, pieces): return False
+        return max(abs(col_idx(tc)-col_idx(fc)), abs(tr-fr)) == 1
+
 
 class Queen(Piece):
     def __str__(self): return "Q"
+    def isValidMove(self, fc, fr, tc, tr, pieces):
+        if self._friendly(tc, tr, pieces): return False
+        dc, dr = abs(col_idx(tc)-col_idx(fc)), abs(tr-fr)
+        return (dc == 0 or dr == 0 or dc == dr) and self._clear(fc, fr, tc, tr, pieces)
+ 
 
 class Rook(Piece):
     def __str__(self): return "R"
