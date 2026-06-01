@@ -1,7 +1,7 @@
-import pygame
+import pygame, os
 from abc import ABC, abstractmethod
-from src.models.position import Position
 from enum import Enum, auto
+from src.models.position import Position
 
 
 class Color_Piece(Enum):
@@ -9,49 +9,56 @@ class Color_Piece(Enum):
     BLACK = auto()
 
 
+COLS = 'abcdefgh'
+
+
+def col_idx(c):
+    return ord(c) - ord('a')
+
+
 class Piece(ABC):
-    colonnes_lettres = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    _images_cache = {}  # Cache pour ne charger chaque image qu'une fois
+    _cache = {}
 
-    def __init__(self, drawing_surface, index, color):
-        column = Piece.colonnes_lettres[index]
-        row = 1 if color == Color_Piece.WHITE else 8
-
-        self.position = Position(column, row)
+    def __init__(self, surface, index, color):
+        self.position = Position(COLS[index], 1 if color == Color_Piece.WHITE else 8)
         self.color = color
-        self.drawing_surface = drawing_surface
+        self.surface = surface
 
     @abstractmethod
-    def __str__(self):
-        pass
-
-    def _get_image_key(self):
-        """Retourne le nom du fichier image, ex: 'Kw' pour King blanc"""
-        suffix = 'w' if self.color == Color_Piece.WHITE else 'b'
-        return f"{str(self)}{suffix}"  # ex: "Kw", "Pb", "Rw"...
-
-    def _load_image(self):
-        from src.models.board import taille_case
-        import os
-        key = self._get_image_key()
-        if key not in Piece._images_cache:
-            # Remonte de src/models/ jusqu'à la racine du projet
-            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            path = os.path.join(base_dir, "assets", "pieces", f"{key}.png")
-            img = pygame.image.load(path).convert_alpha()
-            img = pygame.transform.scale(img, (taille_case, taille_case))
-            Piece._images_cache[key] = img
-        return Piece._images_cache[key]
+    def __str__(self): pass
 
     def draw(self):
-        from src.models.board import taille_case
-        col_idx = ord(self.position.column) - ord('a')
-        row_idx = 8 - self.position.row
-        x = col_idx * taille_case
-        y = row_idx * taille_case
+        from src.models.board import CASE
+        key = f"{self}{('w' if self.color == Color_Piece.WHITE else 'b')}"
+        if key not in Piece._cache:
+            base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            img = pygame.image.load(os.path.join(base, "assets", "pieces", f"{key}.png")).convert_alpha()
+            Piece._cache[key] = pygame.transform.scale(img, (CASE, CASE))
+        x = col_idx(self.position.column) * CASE
+        y = (8 - self.position.row) * CASE
+        self.surface.blit(Piece._cache[key], (x, y))
 
-        image = self._load_image()
-        self.drawing_surface.blit(image, (x, y))
+    def _at(self, col, row, pieces):
+        return next((p for p in pieces if p.position.column == col and p.position.row == row), None)
+
+    def _friendly(self, col, row, pieces):
+        p = self._at(col, row, pieces)
+        return p is not None and p.color == self.color
+
+    def _clear(self, fc, fr, tc, tr, pieces):
+        dc = 0 if tc == fc else (1 if col_idx(tc) > col_idx(fc) else -1)
+        dr = 0 if tr == fr else (1 if tr > fr else -1)
+        c, r = col_idx(fc) + dc, fr + dr
+        while (c, r) != (col_idx(tc), tr):
+            if self._at(COLS[c], r, pieces):
+                return False
+            c += dc; r += dr
+        return True
+
+    def isValidMove(self, fc, fr, tc, tr, pieces):
+        return False
+
+ 
 
 
 class King(Piece):
