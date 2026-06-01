@@ -74,6 +74,11 @@ class Rook(Piece):
 
 class Bishop(Piece):
     def __str__(self): return "B"
+    def isValidMove(self, fc, fr, tc, tr, pieces):
+        if self._friendly(tc, tr, pieces): return False
+        dc, dr = abs(col_idx(tc)-col_idx(fc)), abs(tr-fr)
+        return dc == dr and dc > 0 and self._clear(fc, fr, tc, tr, pieces)
+ 
 
 class Knight(Piece):
     def __str__(self): return "N"
