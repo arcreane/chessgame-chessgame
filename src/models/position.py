@@ -5,6 +5,3 @@ class Position:
 
     def __str__(self):
         return f"{self.column}{self.row}"
-
-    def get_col(self):
-        return ord(self.column) - ord('a')
