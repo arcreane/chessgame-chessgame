@@ -6,10 +6,14 @@ from src.models.timer import ChessTimer
 
 
 def draw_board(screen, board):
+    font = pygame.font.SysFont("Arial", 14)
     for r in range(8):
         for c in range(8):
             col = (240, 217, 181) if (r + c) % 2 == 0 else (139, 131, 134)
             pygame.draw.rect(screen, col, (c * 80, r * 80, 80, 80))
+            # nom de la case (ex: "a8") dans le coin haut-gauche de chaque case
+            nom = chr(ord('a') + c) + str(8 - r)
+            screen.blit(font.render(nom, True, (90, 90, 90)), (c * 80 + 3, r * 80 + 2))
     board.draw_pieces()
 
 
@@ -34,8 +38,8 @@ def show_timeout_screen(screen, board, winner_name, timer, names):
 
 def main():
     pygame.init()
-    # 640 board + 100 timer strip
-    screen = pygame.display.set_mode((640, 740))
+    # 640 plateau + 100 timer + 60 bande de saisie en bas
+    screen = pygame.display.set_mode((640, 800))
     pygame.display.set_caption("Chess Game")
     board = BoardGame(screen)
 
@@ -69,8 +73,11 @@ def main():
             pygame.quit()
             sys.exit()
 
-        print(f"{p.name} joue {move}")
-        curr = 1 - curr
+        if board.jouer_coup(move):
+            print(f"{p.name} joue {move}")
+            curr = 1 - curr
+        else:
+            print(f"Coup invalide : {move}")
 
 
 if __name__ == "__main__":
