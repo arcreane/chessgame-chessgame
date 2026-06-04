@@ -43,6 +43,15 @@ class Piece(ABC):
             Piece._images_cache[key] = img
         return Piece._images_cache[key]
 
+    def _ecart(self, newPosition):
+        dcol = ord(newPosition.column) - ord(self.position.column)
+        drow = newPosition.row - self.position.row
+        return dcol, drow
+
+    def _arrivee_libre(self, newPosition, board):
+        piece = board.getPiece(newPosition)
+        return piece is None or piece.color != self.color
+
     def draw(self):
         from src.models.board import taille_case
         col_idx = ord(self.position.column) - ord('a')
@@ -57,17 +66,55 @@ class Piece(ABC):
 class King(Piece):
     def __str__(self): return "K"
 
+    def isValidMove(self, newPosition, board):
+        dcol, drow = self._ecart(newPosition)
+        if abs(dcol) <= 1 and abs(drow) <= 1 and (dcol != 0 or drow != 0):
+            return self._arrivee_libre(newPosition, board)
+        return False
+
 class Queen(Piece):
     def __str__(self): return "Q"
+
+    def isValidMove(self, newPosition, board):
+        dcol, drow = self._ecart(newPosition)
+        droite = (dcol == 0 or drow == 0)
+        diago = (abs(dcol) == abs(drow))
+        if (dcol == 0 and drow == 0) or not (droite or diago):
+            return False
+        if not board.chemin_libre(self.position, newPosition):
+            return False
+        return self._arrivee_libre(newPosition, board)
 
 class Rook(Piece):
     def __str__(self): return "R"
 
+    def isValidMove(self, newPosition, board):
+        dcol, drow = self._ecart(newPosition)
+        if (dcol == 0) == (drow == 0):
+            return False
+        if not board.chemin_libre(self.position, newPosition):
+            return False
+        return self._arrivee_libre(newPosition, board)
+
 class Bishop(Piece):
     def __str__(self): return "B"
 
+    def isValidMove(self, newPosition, board):
+        dcol, drow = self._ecart(newPosition)
+        if dcol == 0 or abs(dcol) != abs(drow):
+            return False
+        if not board.chemin_libre(self.position, newPosition):
+            return False
+        return self._arrivee_libre(newPosition, board)
+
 class Knight(Piece):
     def __str__(self): return "N"
+
+    def isValidMove(self, newPosition, board):
+        dcol, drow = self._ecart(newPosition)
+        if (abs(dcol), abs(drow)) in [(1, 2), (2, 1)]:
+            return self._arrivee_libre(newPosition, board)
+        return False
 
 class Pawn(Piece):
     def __init__(self, drawing_surface, index, color):
@@ -75,3 +122,20 @@ class Pawn(Piece):
         self.position.row = 2 if color == Color_Piece.WHITE else 7
 
     def __str__(self): return "P"
+
+    def isValidMove(self, newPosition, board):
+        dcol, drow = self._ecart(newPosition)
+        sens = 1 if self.color == Color_Piece.WHITE else -1
+        depart = 2 if self.color == Color_Piece.WHITE else 7
+        cible = board.getPiece(newPosition)
+        if dcol == 0:
+            if drow == sens and cible is None:
+                return True
+            if drow == 2 * sens and self.position.row == depart and cible is None:
+                milieu = Position(self.position.column, self.position.row + sens)
+                if board.getPiece(milieu) is None:
+                    return True
+            return False
+        if abs(dcol) == 1 and drow == sens and cible is not None and cible.color != self.color:
+            return True
+        return False
