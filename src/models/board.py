@@ -1,25 +1,31 @@
 from src.models.pieces_types import *
 
-taille_case = 80
+CASE = 80
+
 
 class BoardGame:
-    pieces_constructor = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
+    BACK_ROW = [Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook]
 
-    def __init__(self, drawing_surface):
-        self.pieces = []
-        self.drawing_surface = drawing_surface
-        self._initialize_pieces()
-
-    def _initialize_pieces(self):
-        for index, constructor in enumerate(BoardGame.pieces_constructor):
-            self.pieces.append(constructor(self.drawing_surface, index, Color_Piece.WHITE))
-            self.pieces.append(constructor(self.drawing_surface, index, Color_Piece.BLACK))
-            self.pieces.append(Pawn(self.drawing_surface, index, Color_Piece.WHITE))
-            self.pieces.append(Pawn(self.drawing_surface, index, Color_Piece.BLACK))
+    def __init__(self, surface):
+        self.surface = surface
+        self.pieces = [
+            cls(surface, i, c)
+            for i, cls in enumerate(self.BACK_ROW)
+            for c in Color_Piece
+        ] + [
+            Pawn(surface, i, c)
+            for i in range(8)
+            for c in Color_Piece
+        ]
 
     def draw_pieces(self):
-        for piece in self.pieces:
-            piece.draw()
+        for p in self.pieces:
+            p.draw()
 
+    def getPosition(self, piece):
+        return piece.position if piece in self.pieces else None
 
-"coded by clement"
+    def getPiece(self, position):
+        return next((p for p in self.pieces
+                     if p.position.column == position.column
+                     and p.position.row == position.row), None)
