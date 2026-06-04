@@ -90,9 +90,24 @@ class Bishop(Piece):
 class Knight(Piece):
     def __str__(self): return "N"
 
+
 class Pawn(Piece):
-    def __init__(self, drawing_surface, index, color):
-        super().__init__(drawing_surface, index, color)
+    def __init__(self, surface, index, color):
+        super().__init__(surface, index, color)
         self.position.row = 2 if color == Color_Piece.WHITE else 7
+        self.has_moved = False
 
     def __str__(self): return "P"
+
+    def isValidMove(self, fc, fr, tc, tr, pieces):
+        d = 1 if self.color == Color_Piece.WHITE else -1
+        dc, dr = col_idx(tc) - col_idx(fc), tr - fr
+        if dc == 0:
+            if dr == d:
+                return self._at(tc, tr, pieces) is None
+            if dr == 2*d and not self.has_moved:
+                return self._at(tc, tr, pieces) is None and self._at(fc, fr+d, pieces) is None
+        elif abs(dc) == 1 and dr == d:
+            target = self._at(tc, tr, pieces)
+            return target is not None and target.color != self.color
+        return False
