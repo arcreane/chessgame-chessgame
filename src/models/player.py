@@ -19,7 +19,7 @@ class Player:
                     else:
                         input_text += event.unicode
 
-            rect = pygame.Rect(140, 300, 360, 50)
+            rect = pygame.Rect(140, 745, 360, 45)
             pygame.draw.rect(screen, (255, 255, 255), rect)
             pygame.draw.rect(screen, (0, 0, 0), rect, 2)
             txt = font.render(f"{self.name} (ex: e2 e4) : {input_text}", True, (0, 0, 0))
