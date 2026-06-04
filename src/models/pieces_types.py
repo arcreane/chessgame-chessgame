@@ -76,8 +76,15 @@ class Queen(Piece):
         return (dc == 0 or dr == 0 or dc == dr) and self._clear(fc, fr, tc, tr, pieces)
  
 
+
 class Rook(Piece):
     def __str__(self): return "R"
+    def isValidMove(self, fc, fr, tc, tr, pieces):
+        if self._friendly(tc, tr, pieces): return False
+        return (fc == tc or fr == tr) and self._clear(fc, fr, tc, tr, pieces)
+
+
+
 
 class Bishop(Piece):
     def __str__(self): return "B"
@@ -89,6 +96,10 @@ class Bishop(Piece):
 
 class Knight(Piece):
     def __str__(self): return "N"
+    def isValidMove(self, fc, fr, tc, tr, pieces):
+        if self._friendly(tc, tr, pieces): return False
+        dc, dr = abs(col_idx(tc)-col_idx(fc)), abs(tr-fr)
+        return sorted([dc, dr]) == [1, 2]
 
 
 class Pawn(Piece):
